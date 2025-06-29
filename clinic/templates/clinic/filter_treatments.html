@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تصفية العلاجات</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .filter-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <a href="{% url 'home' %}" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> رجوع إلى الصفحة الرئيسية</a>
+
+    <div class="filter-card">
+        <h2 class="text-center text-primary mb-4"><i class="bi bi-funnel"></i> تصفية العلاجات</h2>
+
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label"><i class="bi bi-calendar"></i> من:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label"><i class="bi bi-calendar"></i> إلى:</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <label for="treatment_type" class="form-label"><i class="bi bi-list"></i> نوع الحالة:</label>
+                <select name="treatment_type" class="form-select">
+                    <option value="">اختر نوع الحالة</option>
+                    <option value="حشوه موقتة">حشوة موقتة</option>
+                    <option value="حشوه دائمه">حشوة دائمة</option>
+                    <option value="قلع">قلع</option>
+                    <option value="زراعة">زراعة</option>
+                    <option value="جذر">جذر</option>
+                </select>
+            </div>
+            <div class="col-12 text-center">
+                <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-search"></i> تصفية</button>
+            </div>
+        </form>
+    </div>
+
+    {% load humanize %}
+    <div class="mt-4 text-center">
+        <h3 class="text-success"><i class="bi bi-cash-coin"></i> إجمالي المبلغ: {{ total_amount|intcomma }} دينار</h3>
+    </div>
+
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>اسم المريض</th>
+                    <th>نوع الحالة</th>
+                    <th>رقم السن</th>
+                    <th>المبلغ المدفوع</th>
+                    <th>تاريخ الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for treatment in treatments %}
+                <tr>
+                    <td>{{ treatment.patient.name }}</td>
+                    <td>{{ treatment.treatment_type }}</td>
+                    <td>{{ treatment.tooth_number }}</td>
+                    <td class="text-success fw-bold">{{ treatment.amount_paid|intcomma }} دينار</td>
+                    <td>{{ treatment.treatment_date }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-danger">لا توجد بيانات متاحة</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

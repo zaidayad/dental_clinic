@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المريض - {{ patient.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --danger-color: #e74a3b;
+            --warning-color: #f6c23e;
+            --info-color: #36b9cc;
+            --light-color: #f8f9fc;
+            --dark-color: #5a5c69;
+            --border-radius: 0.35rem;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8f9fc;
+            color: var(--dark-color);
+        }
+        
+        .patient-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #2e59d9 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(78, 115, 223, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .patient-header::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .patient-header::after {
+            content: "";
+            position: absolute;
+            bottom: -80px;
+            left: -80px;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+            margin-bottom: 2rem;
+            transition: all 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+            padding: 1rem 1.35rem;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .card-header i {
+            margin-left: 8px;
+        }
+        
+        .dental-chart {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+            margin: 1.5rem auto;
+        }
+        
+        .tooth-container {
+            display: inline-block;
+            margin: 0.4rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .tooth {
+            width: 2.5rem;
+            height: 3.5rem;
+            background: var(--light-color);
+            border: 1px solid #d1d3e2;
+            position: relative;
+            transition: all 0.3s;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .upper-jaw .tooth {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        .lower-jaw .tooth {
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        
+        .tooth.treated {
+            background: var(--success-color);
+            border-color: #17a673;
+        }
+        
+        .tooth-number {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-top: 0.25rem;
+        }
+        
+        .jaw-title {
+            font-weight: bold;
+            margin: 1.25rem 0;
+            color: var(--dark-color);
+            position: relative;
+            padding-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .jaw-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 30%;
+            right: 30%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, currentColor, transparent);
+        }
+        
+        .jaw-section {
+            margin-bottom: 2rem;
+        }
+        
+        .upper-jaw {
+            background: rgba(248, 215, 218, 0.2);
+            padding: 1.25rem 0;
+            border-radius: 50% 50% 0 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .lower-jaw {
+            background: rgba(209, 231, 221, 0.2);
+            padding: 1.25rem 0;
+            border-radius: 0 0 50% 50%;
+        }
+        
+        .treatment-badge {
+            position: absolute;
+            top: -0.5rem;
+            right: -0.5rem;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 1.25rem;
+            height: 1.25rem;
+            font-size: 0.625rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+        }
+        
+        .list-group-item {
+            border-radius: var(--border-radius);
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            padding: 1.25rem;
+        }
+        
+        .list-group-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border-color: rgba(var(--primary-color), 0.2);
+        }
+        
+        .btn-rounded {
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-rounded:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2e59d9;
+            border-color: #2653d4;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border-color: var(--warning-color);
+            color: #fff;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .patient-info-icon {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-left: 0.5rem;
+        }
+        
+        .treatment-type {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .treatment-detail {
+            margin-bottom: 0.25rem;
+        }
+        
+        .treatment-detail i {
+            color: var(--secondary-color);
+            margin-left: 0.5rem;
+        }
+        
+        .img-thumbnail {
+            border-radius: var(--border-radius);
+            max-height: 150px;
+            border: 1px solid #e3e6f0;
+            transition: all 0.3s;
+        }
+        
+        .img-thumbnail:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .action-buttons .btn {
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0.25rem;
+            transition: all 0.3s;
+        }
+        
+        .action-buttons .btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #dddfeb;
+        }
+        
+        .note-text {
+            background-color: #f8f9fc;
+            border-radius: var(--border-radius);
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            border-right: 3px solid var(--info-color);
+        }
+        
+        @media (max-width: 768px) {
+            .tooth {
+                width: 2rem;
+                height: 2.8rem;
+            }
+            
+            .tooth-number {
+                font-size: 0.65rem;
+            }
+            
+            .treatment-badge {
+                width: 1rem;
+                height: 1rem;
+                font-size: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <!-- زر الرجوع -->
+    <a href="{% url 'home' %}" class="btn btn-secondary btn-rounded mb-3">
+        <i class="fas fa-arrow-left me-1"></i> رجوع للقائمة الرئيسية
+    </a>
+    
+    <!-- عنوان الصفحة -->
+    <div class="patient-header text-center">
+        <h2 class="mb-3"><i class="fas fa-user-injured me-2"></i>ملف المريض</h2>
+        <h3 class="mb-0">{{ patient.name }}</h3>
+    </div>
+
+    <!-- معلومات المريض الأساسية -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-id-card"></i> المعلومات الأساسية
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-birthday-cake patient-info-icon"></i>
+                        <div>
+                            <h5 class="mb-0">العمر</h5>
+                            <p class="mb-0 text-muted">{{ patient.age }} سنة</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-phone patient-info-icon"></i>
+                        <div>
+                            <h5 class="mb-0">رقم الهاتف</h5>
+                            <p class="mb-0 text-muted">{{ patient.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{% url 'edit_patient' patient.id %}" class="btn btn-warning btn-rounded mx-2">
+                    <i class="fas fa-edit me-1"></i> تعديل البيانات
+                </a>
+                <a href="{% url 'delete_patient' patient.id %}" class="btn btn-danger btn-rounded mx-2" onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذا المريض؟ جميع البيانات المرتبطة به سيتم حذفها أيضاً.');">
+                    <i class="fas fa-trash me-1"></i> حذف المريض
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- زر إضافة حالة جديدة -->
+    <div class="d-flex justify-content-center my-4">
+        <a href="{% url 'add_treatment' patient.id %}" class="btn btn-primary btn-rounded btn-lg">
+            <i class="fas fa-plus-circle me-2"></i> إضافة حالة علاجية جديدة
+        </a>
+    </div>
+    <!-- خريطة الأسنان المعالجة -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-tooth"></i> خريطة الأسنان المعالجة
+        </div>
+        <div class="card-body">
+            <div class="dental-chart">
+                <div class="text-center mb-4">
+                    <i class="fas fa-teeth-open fa-2x text-primary mb-2"></i>
+                    <h4>خريطة الأسنان</h4>
+                    <p class="text-muted">الأسنان الخضراء تم علاجها - الأرقام تمثل ترميز الأسنان</p>
+                </div>
+                
+                <!-- الفك العلوي -->
+                <div class="jaw-section">
+                    <h5 class="jaw-title text-danger">
+                        <i class="fas fa-chevron-down me-2"></i>الفك العلوي (Maxillary Arch)
+                    </h5>
+                    <div class="upper-jaw text-center">
+                        {% for tooth in all_teeth|slice:":16" %}
+                            <div class="tooth-container" data-toggle="tooltip" title="{{ tooth }}">
+                                <div class="tooth {% if tooth in treated_teeth %}treated{% endif %}">
+                                    {% if tooth in treated_teeth %}
+                                    <span class="treatment-badge" title="تم علاج هذه السن">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="tooth-number">{{ tooth }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- الفك السفلي -->
+                <div class="jaw-section">
+                    <h5 class="jaw-title text-success">
+                        <i class="fas fa-chevron-up me-2"></i>الفك السفلي (Mandibular Arch)
+                    </h5>
+                    <div class="lower-jaw text-center">
+                        {% for tooth in all_teeth|slice:"16:" %}
+                            <div class="tooth-container" data-toggle="tooltip" title="{{ tooth }}">
+                                <div class="tooth {% if tooth in treated_teeth %}treated{% endif %}">
+                                    {% if tooth in treated_teeth %}
+                                    <span class="treatment-badge" title="تم علاج هذه السن">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="tooth-number">{{ tooth }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- سجل العلاجات -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-clipboard-list"></i> سجل العلاجات
+        </div>
+        <div class="card-body">
+            {% if treatments %}
+            <div class="list-group">
+                {% for treatment in treatments %}
+                <div class="list-group-item">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="treatment-type">
+                                <i class="fas fa-procedures me-2"></i>{{ treatment.treatment_type }}
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="treatment-detail">
+                                        <i class="fas fa-tooth"></i>
+                                        <strong>السن المعالج:</strong> {{ treatment.tooth_number }}
+                                    </p>
+                                    
+                                    <p class="treatment-detail">
+                                        <i class="fas fa-calendar-day"></i>
+                                        <strong>تاريخ الجلسة:</strong> {{ treatment.treatment_date }}
+                                    </p>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    {% load humanize %}
+                                    <p class="treatment-detail">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <strong>المبلغ المدفوع:</strong> {{ treatment.amount_paid|intcomma }} دينار عراقي
+                                    </p>
+                                    <p class="treatment-detail">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        <strong>مبلغ الاول :</strong> {{ treatment.first_installment|intcomma }} دينار عراقي
+                                    </p>
+                                    
+                                    <p class="treatment-detail">
+                                        <i class="fas fa-money-bill-alt"></i>
+                                        <strong>المبلغ المتبقي:</strong> {{ treatment.remaining_amount|intcomma }} دينار
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if treatment.note %}
+                            <div class="note-text">
+                                <strong><i class="fas fa-sticky-note me-2"></i>ملاحظات:</strong>
+                                {{ treatment.note }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if treatment.image %}
+                            <div class="mt-3">
+                                <a href="{{ treatment.image.url }}" target="_blank">
+                                    <img src="{{ treatment.image.url }}" alt="صورة الحالة" class="img-thumbnail">
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="action-buttons mt-3 mt-md-0">
+                            <a href="{% url 'edit_treatment' treatment.id %}" class="btn btn-warning" title="تعديل الحالة">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_treatment' treatment.id %}" class="btn btn-danger" title="حذف الحالة" onclick="return confirm('هل أنت متأكد من رغبتك في حذف هذه الحالة العلاجية؟');">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-clipboard"></i>
+                <h4 class="text-muted">لا توجد علاجات مسجلة لهذا المريض</h4>
+                <p class="text-muted">يمكنك إضافة حالة علاجية جديدة بالضغط على زر "إضافة حالة جديدة" أعلاه</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // تفعيل أدوات التلميح (Tooltips)
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+
+<!-- Lightbox2 CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet" />
+
+<!-- Lightbox2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+
+</body>
+</html>

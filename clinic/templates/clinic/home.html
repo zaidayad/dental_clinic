@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>الصفحة الرئيسية - قائمة المرضى</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #a8e6ff, #dff6ff);
+            font-family: 'Arial', sans-serif;
+        }
+        .header {
+            text-align: center;
+            padding: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #0077b6;
+            position: relative;
+        }
+        .header::before {
+            content: '\1F9B7'; /* أيقونة سن */
+            font-size: 50px;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: rotateTooth 2s infinite alternate;
+        }
+        @keyframes rotateTooth {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(15deg); }
+        }
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 15px;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .btn-primary {
+            background-color: #0077b6;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #005f8b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="header">عيادة الدكتور علي إياد</div>
+
+        <!-- شريط البحث -->
+        <form method="get" action="{% url 'home' %}" class="search-bar">
+            <div class="input-group">
+                <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="ابحث عن مريض...">
+                <button class="btn btn-primary" type="submit">بحث</button>
+            </div>
+        </form>
+
+        {% if patients %}
+            <div class="row">
+                {% for patient in patients %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">
+                                    <a href="{% url 'patient_detail' patient.id %}" class="text-decoration-none text-dark">{{ patient.name }}</a>
+                                </h5>
+                                <p class="card-text"><strong>العمر:</strong> {{ patient.age }} سنة</p>
+                                <p class="card-text"><strong>رقم الهاتف:</strong> {{ patient.phone }}</p>
+                                
+                                <a href="{% url 'edit_patient' patient.id %}" class="btn btn-warning btn-sm">تعديل</a>
+                                <a href="{% url 'delete_patient' patient.id %}" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center">لا توجد أي سجلات للمرضى حتى الآن.</p>
+        {% endif %}
+        <div class="text-end mb-3">
+            <a href="{% url 'export_treatments' %}" class="btn btn-success">
+                📤 تصدير العلاجات إلى Excel
+            </a>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'filter_treatments' %}" class="btn btn-primary">القسم المالي</a>
+            <a href="{% url 'register_patient' %}" class="btn btn-primary">تسجيل مريض جديد</a>
+        </div>
+    </div>
+</body>
+</html>

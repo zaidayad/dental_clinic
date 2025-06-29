@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة حالة للمريض - {{ patient.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --tooth-color: #f8f9fa;
+            --tooth-border: #adb5bd;
+            --selected-color: #0d6efd;
+            --upper-jaw: #f3d7d7;
+            --lower-jaw: #d7e7d7;
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --accent-color: #2e59d9;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8f9fc;
+            color: #5a5c69;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(78, 115, 223, 0.3);
+        }
+        
+        .dental-chart {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin: 25px auto;
+            max-width: 950px;
+            overflow-x: auto;
+            border: 1px solid #e3e6f0;
+        }
+        
+        .jaw-container {
+            position: relative;
+            margin: 35px 0;
+        }
+        
+        .upper-jaw {
+            background: var(--upper-jaw);
+            padding: 25px 0;
+            border-radius: 50% 50% 0 0;
+            box-shadow: inset 0 5px 10px rgba(0,0,0,0.05);
+        }
+        
+        .lower-jaw {
+            background: var(--lower-jaw);
+            padding: 25px 0;
+            border-radius: 0 0 50% 50%;
+            margin-top: -15px;
+            box-shadow: inset 0 -5px 10px rgba(0,0,0,0.05);
+        }
+        
+        .tooth-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 5px;
+        }
+        
+        .tooth-container {
+            margin: 0 4px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .tooth-shape {
+            width: 35px;
+            height: 45px;
+            background: var(--tooth-color);
+            border: 1px solid var(--tooth-border);
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .upper-jaw .tooth-shape {
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 8px;
+        }
+        
+        .lower-jaw .tooth-shape {
+            border-radius: 0 0 10px 10px;
+            margin-top: 8px;
+        }
+        
+        .tooth-container:hover .tooth-shape {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            background: #e9ecef;
+        }
+        
+        .tooth-container.selected .tooth-shape {
+            background: var(--primary-color);
+            border-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 8px rgba(78, 115, 223, 0.4);
+        }
+        
+        .tooth-number {
+            font-size: 11px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .tooth-name {
+            font-size: 10px;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+        
+        .jaw-title {
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            color: #212529;
+            font-size: 1.1rem;
+            position: relative;
+            padding-bottom: 8px;
+        }
+        
+        .jaw-title:after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 30%;
+            right: 30%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, currentColor, transparent);
+        }
+        
+        .midline {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.1), transparent);
+            z-index: 1;
+        }
+        
+        .tooth-container.selected .tooth-number,
+        .tooth-container.selected .tooth-name {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            border: 1px solid #e3e6f0;
+        }
+        
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px 15px;
+            border: 1px solid #d1d3e2;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(78, 115, 223, 0.3);
+        }
+        
+        .btn-outline-secondary {
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-outline-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .input-group-text {
+            border-radius: 10px 0 0 10px;
+            background-color: #f8f9fc;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #5a5c69;
+        }
+        
+        #selected-tooth-info {
+            border-radius: 10px;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .custom-file-label::after {
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .tooth-anatomy-icon {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .tooth-shape {
+                width: 25px;
+                height: 35px;
+            }
+            .tooth-name {
+                font-size: 8px;
+            }
+            .jaw-title {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Header Section -->
+                <div class="header text-center">
+                    <h2 class="mb-3">
+                        <i class="fas fa-tooth me-2"></i>إضافة حالة علاجية جديدة
+                    </h2>
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-injured me-2"></i>للمريض: {{ patient.name }}
+                    </h4>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- معلومات السن المختار -->
+                    <div class="card mb-4">
+                        <div class="card-header text-center">
+                            <i class="fas fa-info-circle me-2"></i>تفاصيل الحالة العلاجية
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.treatment_type.id_for_label }}" class="form-label">
+                                        <i class="fas fa-procedures me-2"></i>نوع العلاج
+                                    </label>
+                                    {{ form.treatment_type }}
+                                    <div class="invalid-feedback">
+                                        يرجى اختيار نوع العلاج
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-tooth me-2"></i>السن المختار
+                                    </label>
+                                    <div id="selected-tooth-info" class="form-control bg-light py-2">
+                                        <div id="selected-tooth-name" class="fw-bold">
+                                            <i class="fas fa-exclamation-circle me-2 text-warning"></i>لم يتم اختيار سن
+                                        </div>
+                                        <small id="selected-tooth-scientific" class="text-muted d-block mt-1"></small>
+                                    </div>
+                                    <input type="hidden" id="tooth_number" name="tooth_number" value="" required>
+                                    <div class="invalid-feedback">
+                                        يرجى اختيار السن من خريطة الأسنان أدناه
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- خريطة الأسنان التشريحية -->
+                    <div class="dental-chart">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-teeth-open tooth-anatomy-icon"></i>
+                            <h4 class="d-inline-block ms-2">خريطة الأسنان التشريحية</h4>
+                            <p class="text-muted mt-2">انقر على السن لتحديده للحالة العلاجية</p>
+                        </div>
+                        
+                        <!-- الفك العلوي -->
+                        <h5 class="jaw-title text-danger">
+                            <i class="fas fa-chevron-down me-2"></i>الفك العلوي (Maxillary Arch)
+                        </h5>
+                        <div class="jaw-container">
+                            <div class="midline"></div>
+                            <div class="upper-jaw">
+                                <div class="tooth-row">
+                                    <!-- الأسنان العلوية اليمنى (من المركز إلى الخلف) -->
+                                    {% for tooth in upper_right_teeth reversed %} 
+                                    <div class="tooth-container" data-tooth="{{ tooth.0 }}">
+                                        <div class="tooth-shape"></div>
+                                        <div class="tooth-number">{{ tooth.2 }}</div>
+                                        <div class="tooth-name">{{ tooth.0 }}</div>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- الأسنان العلوية اليسرى (من المركز إلى الخلف) -->
+                                    {% for tooth in upper_left_teeth %}
+                                    <div class="tooth-container" data-tooth="{{ tooth.0 }}">
+                                        <div class="tooth-shape"></div>
+                                        <div class="tooth-number">{{ tooth.2 }}</div>
+                                        <div class="tooth-name">{{ tooth.0 }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الفك السفلي -->
+                        <h5 class="jaw-title text-success">
+                            <i class="fas fa-chevron-up me-2"></i>الفك السفلي (Mandibular Arch)
+                        </h5>
+                        <div class="jaw-container">
+                            <div class="midline"></div>
+                            <div class="lower-jaw">
+                                <div class="tooth-row">
+                                    <!-- الأسنان السفلية اليمنى (من المركز إلى الخلف) -->
+                                    {% for tooth in lower_right_teeth reversed %} 
+                                    <div class="tooth-container" data-tooth="{{ tooth.0 }}">
+                                        <div class="tooth-shape"></div>
+                                        <div class="tooth-number">{{ tooth.2 }}</div>
+                                        <div class="tooth-name">{{ tooth.0 }}</div>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- الأسنان السفلية اليسرى (من المركز إلى الخلف) -->
+                                    {% for tooth in lower_left_teeth %}
+                                    <div class="tooth-container" data-tooth="{{ tooth.0 }}">
+                                        <div class="tooth-shape"></div>
+                                        <div class="tooth-number">{{ tooth.2 }}</div>
+                                        <div class="tooth-name">{{ tooth.0 }}</div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  
+                    <!-- معلومات الدفع والموعد -->
+                    <div class="card mt-4">
+                        <div class="card-header text-center">
+                            <i class="fas fa-money-bill-wave me-2"></i>معلومات الدفع والموعد
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.amount_paid.id_for_label }}" class="form-label">
+                                        <i class="fas fa-coins me-2"></i>المبلغ المدفوع
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">د.ع</span>
+                                        {{ form.amount_paid }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.first_installment.id_for_label }}" class="form-label">
+                                        <i class="fas fa-hand-holding-usd me-2"></i>القسط الأول
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">د.ع</span>
+                                        {{ form.first_installment }}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.treatment_date.id_for_label }}" class="form-label">
+                                        <i class="far fa-calendar-alt me-2"></i>تاريخ الجلسة
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                        {{ form.treatment_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- المرفقات والملاحظات -->
+                    <div class="card mt-4">
+                        <div class="card-header text-center">
+                            <i class="fas fa-paperclip me-2"></i>المرفقات والملاحظات
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label for="{{ form.image.id_for_label }}" class="form-label">
+                                    <i class="fas fa-camera me-2"></i>صورة الحالة (اختياري)
+                                </label>
+                                <div class="custom-file">
+                                    {{ form.image }}
+                                    <small class="text-muted d-block mt-2">
+                                        يمكنك رفع صورة توضح حالة السن (JPEG, PNG - الحد الأقصى 5MB)
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.note.id_for_label }}" class="form-label">
+                                    <i class="fas fa-sticky-note me-2"></i>ملاحظات إضافية
+                                </label>
+                                {{ form.note }}
+                                <small class="text-muted d-block mt-2">
+                                    يمكنك إضافة أي ملاحظات أو تفاصيل إضافية عن الحالة
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أزرار التحكم -->
+                    <div class="text-center mt-5">
+                        <button type="submit" class="btn btn-primary px-5 py-2">
+                            <i class="fas fa-save me-2"></i>حفظ الحالة
+                        </button>
+                        <a href="{% url 'patient_detail' patient.id %}" class="btn btn-outline-secondary px-5 py-2 ms-3">
+                            <i class="fas fa-arrow-left me-2"></i>رجوع
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // قاموس الأسماء العلمية الكاملة
+        const toothScientificNames = {
+            // الفك العلوي الأيمن
+            'UR1': 'الثنية المركزية العلوية اليمنى (Maxillary Right Central Incisor)',
+            'UR2': 'الثنية الجانبية العلوية اليمنى (Maxillary Right Lateral Incisor)',
+            'UR3': 'الناب العلوي الأيمن (Maxillary Right Canine)',
+            'UR4': 'الضوحك الأول العلوي الأيمن (Maxillary Right First Premolar)',
+            'UR5': 'الضوحك الثاني العلوي الأيمن (Maxillary Right Second Premolar)',
+            'UR6': 'الضرس الأول العلوي الأيمن (Maxillary Right First Molar)',
+            'UR7': 'الضرس الثاني العلوي الأيمن (Maxillary Right Second Molar)',
+            'UR8': 'ضرس العقل العلوي الأيمن (Maxillary Right Third Molar)',
+            
+            // الفك العلوي الأيسر
+            'UL1': 'الثنية المركزية العلوية اليسرى (Maxillary Left Central Incisor)',
+            'UL2': 'الثنية الجانبية العلوية اليسرى (Maxillary Left Lateral Incisor)',
+            'UL3': 'الناب العلوي الأيسر (Maxillary Left Canine)',
+            'UL4': 'الضوحك الأول العلوي الأيسر (Maxillary Left First Premolar)',
+            'UL5': 'الضوحك الثاني العلوي الأيسر (Maxillary Left Second Premolar)',
+            'UL6': 'الضرس الأول العلوي الأيسر (Maxillary Left First Molar)',
+            'UL7': 'الضرس الثاني العلوي الأيسر (Maxillary Left Second Molar)',
+            'UL8': 'ضرس العقل العلوي الأيسر (Maxillary Left Third Molar)',
+            
+            // الفك السفلي الأيمن
+            'LR1': 'الثنية المركزية السفلية اليمنى (Mandibular Right Central Incisor)',
+            'LR2': 'الثنية الجانبية السفلية اليمنى (Mandibular Right Lateral Incisor)',
+            'LR3': 'الناب السفلي الأيمن (Mandibular Right Canine)',
+            'LR4': 'الضوحك الأول السفلي الأيمن (Mandibular Right First Premolar)',
+            'LR5': 'الضوحك الثاني السفلي الأيمن (Mandibular Right Second Premolar)',
+            'LR6': 'الضرس الأول السفلي الأيمن (Mandibular Right First Molar)',
+            'LR7': 'الضرس الثاني السفلي الأيمن (Mandibular Right Second Molar)',
+            'LR8': 'ضرس العقل السفلي الأيمن (Mandibular Right Third Molar)',
+            
+            // الفك السفلي الأيسر
+            'LL1': 'الثنية المركزية السفلية اليسرى (Mandibular Left Central Incisor)',
+            'LL2': 'الثنية الجانبية السفلية اليسرى (Mandibular Left Lateral Incisor)',
+            'LL3': 'الناب السفلي الأيسر (Mandibular Left Canine)',
+            'LL4': 'الضوحك الأول السفلي الأيسر (Mandibular Left First Premolar)',
+            'LL5': 'الضوحك الثاني السفلي الأيسر (Mandibular Left Second Premolar)',
+            'LL6': 'الضرس الأول السفلي الأيسر (Mandibular Left First Molar)',
+            'LL7': 'الضرس الثاني السفلي الأيسر (Mandibular Left Second Molar)',
+            'LL8': 'ضرس العقل السفلي الأيسر (Mandibular Left Third Molar)'
+        };
+
+        // تحديد السن المختار
+        document.querySelectorAll('.tooth-container').forEach(container => {
+            container.addEventListener('click', function() {
+                // إزالة التحديد السابق
+                document.querySelectorAll('.tooth-container').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                
+                // تحديد السن الجديد
+                this.classList.add('selected');
+                const toothId = this.getAttribute('data-tooth');
+                document.getElementById('tooth_number').value = toothId;
+                
+                // عرض معلومات السن
+                const toothName = toothId;
+                const scientificName = toothScientificNames[toothId] || 'غير معروف';
+                
+                document.getElementById('selected-tooth-name').innerHTML = `
+                    <i class="fas fa-tooth me-2"></i>
+                    <strong>${toothName}</strong>
+                `;
+                document.getElementById('selected-tooth-scientific').textContent = scientificName;
+                
+                // تغيير لون معلومات السن المختار
+                const toothInfo = document.getElementById('selected-tooth-info');
+                toothInfo.classList.remove('bg-light');
+                toothInfo.classList.add('bg-primary-light', 'text-primary');
+            });
+        });
+
+        // تمييز السن المختار مسبقاً (في حالة التعديل)
+        {% if form.tooth_number.value %}
+            const selectedTooth = document.querySelector(`.tooth-container[data-tooth="{{ form.tooth_number.value }}"]`);
+            if (selectedTooth) {
+                selectedTooth.classList.add('selected');
+                const toothCode = '{{ form.tooth_number.value }}';
+                const scientificName = toothScientificNames[toothCode] || 'غير معروف';
+                
+                document.getElementById('selected-tooth-name').innerHTML = `
+                    <i class="fas fa-tooth me-2"></i>
+                    <strong>{{ form.tooth_number.value }}</strong>
+                `;
+                document.getElementById('selected-tooth-scientific').textContent = scientificName;
+                
+                const toothInfo = document.getElementById('selected-tooth-info');
+                toothInfo.classList.remove('bg-light');
+                toothInfo.classList.add('bg-primary-light', 'text-primary');
+            }
+        {% endif %}
+
+        // تفعيل التحقق من صحة النموذج
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+</body>
+</html>
