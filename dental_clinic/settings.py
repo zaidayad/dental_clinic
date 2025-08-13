@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-qo@*e9_5o%hc22hzn%yd=8*^$zrty6)!$x972np!65_h@gz9vi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.0.215', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize', 
     'clinic',
+    'widget_tweaks',
 
 ]
 

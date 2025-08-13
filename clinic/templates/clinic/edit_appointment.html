@@ -1,0 +1,47 @@
+{% load static %}
+
+{% block content %}
+<div class="container my-5" style="max-width: 600px;">
+  <div class="card shadow p-4" style="background: #f9fafb; border-radius: 12px;">
+    <h3 class="mb-4 text-center text-primary">تعديل موعد المريض</h3>
+
+    <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+          {{ form.patient_name.label_tag }}
+          {{ form.patient_name }}
+        </div>
+        <div class="mb-3">
+            {{ form.date.label_tag }}
+            {{ form.date }}
+          </div>
+        <div class="mb-3">
+          {{ form.day.label_tag }}
+          {{ form.day }}
+        </div>
+        <div class="mb-3">
+          {{ form.time.label_tag }}
+          {{ form.time }}
+        </div>
+        <div class="mb-3">
+          {{ form.notes.label_tag }}
+          {{ form.notes }}
+        </div>
+      
+       
+      
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'appointments' %}" class="btn btn-secondary">رجوع</a>
+        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  body {
+    background: linear-gradient(135deg, #c3e0ff 0%, #8ab4f8 100%);
+    min-height: 100vh;
+  }
+</style>
+{% endblock %}

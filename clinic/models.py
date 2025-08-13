@@ -88,3 +88,14 @@ class Treatment(models.Model):
     def __str__(self):
         return f"حالة {self.patient.name} - {self.get_treatment_type_display()} في {self.date}"
 
+
+class Appointment(models.Model):
+    
+
+    patient_name = models.CharField(max_length=255, blank=True, null=True)
+    date = models.DateField(null=True, blank=True)
+    time = models.TimeField()
+    notes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.patient_name} - {self.date} {self.time.strftime('%H:%M')}"

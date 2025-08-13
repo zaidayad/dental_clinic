@@ -1,6 +1,7 @@
 from django import forms
 from .models import Patient
 from .models import Treatment
+from .models import Appointment
 from datetime import date  
 class PatientForm(forms.ModelForm):
     class Meta:
@@ -30,3 +31,13 @@ class TreatmentForm(forms.ModelForm):
         # ضبط القيمة الافتراضية لحقل التاريخ
         if not self.instance.pk:  # فقط عند الإضافة وليس التعديل
             self.fields['treatment_date'].initial = date.today()
+
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['patient_name', 'date', 'time', 'notes']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'time': forms.TimeInput(attrs={'type': 'time'}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }

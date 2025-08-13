@@ -11,7 +11,18 @@ from django.conf import settings
 from openpyxl import Workbook
 from django.http import HttpResponse
 from openpyxl.drawing.image import Image as ExcelImage
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Appointment, Patient
+from .forms import AppointmentForm
+from datetime import datetime, timedelta, date
+from django.db.models import Q
+from django.db.models.functions import ExtractWeekDay
 
+
+@login_required(login_url="admin_login")
 def home(request):
     query = request.GET.get('q', '')  # الحصول على قيمة البحث من URL
     if query:
@@ -141,6 +152,7 @@ def add_treatment(request, patient_id):
         'lower_right_teeth': lower_right_teeth,
         'lower_left_teeth': lower_left_teeth,
     })
+@login_required(login_url="admin_login")
 def edit_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
     
@@ -154,12 +166,14 @@ def edit_treatment(request, treatment_id):
 
     return render(request, 'clinic/edit_treatment.html', {'form': form, 'treatment': treatment})
 
+@login_required(login_url="admin_login")
 def delete_treatment(request, treatment_id):
     treatment = get_object_or_404(Treatment, id=treatment_id)
     patient_id = treatment.patient.id  # نحفظ ID المريض قبل الحذف
     treatment.delete()
     return redirect('patient_detail', patient_id=patient_id)
 
+@login_required(login_url="admin_login")
 def filter_treatments(request):
     treatments = Treatment.objects.all()
     
@@ -189,7 +203,7 @@ def filter_treatments(request):
         'start_date': start_date,
         'end_date': end_date,
     })
-
+@login_required(login_url="admin_login")
 def export_treatments_excel(request):
     # إنشاء ملف Excel
     wb = Workbook()
@@ -256,3 +270,85 @@ def export_treatments_excel(request):
     wb.save(response)
 
     return response
+
+
+def admin_login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None and user.is_superuser:
+            login(request, user)
+            return redirect("home")
+        else:
+            messages.error(request, "❌ اسم المستخدم أو كلمة المرور غير صحيحة")
+
+    return render(request, "clinic/admin_login.html")
+
+def admin_logout(request):
+    logout(request)
+    return redirect("admin_login")
+
+def get_week_dates(reference_date=None):
+    # إرجاع قائمة تواريخ الأسبوع (الأحد إلى السبت) بناء على تاريخ معين (أو اليوم إذا لم يحدد)
+    if reference_date is None:
+        reference_date = date.today()
+    start_of_week = reference_date - timedelta(days=reference_date.weekday() + 1)  # نفترض الأحد بداية الأسبوع
+    return [start_of_week + timedelta(days=i) for i in range(7)]
+
+from django.shortcuts import render
+from .models import Appointment
+from django.db.models.functions import ExtractWeekDay
+
+def appointments(request):
+    # إضافة موعد جديد إذا كان الطلب POST
+    if request.method == "POST":
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('appointments')  # إعادة التوجيه لتجنب إعادة الإرسال عند التحديث
+    else:
+        form = AppointmentForm()
+
+    # فلترة وبحث المواعيد
+    appointments = Appointment.objects.all().order_by('date', 'time')
+
+    # الحصول على القيم من GET
+    patient_name = request.GET.get('patient_name', '').strip()
+    date = request.GET.get('date', '').strip()
+
+    if patient_name:
+        appointments = appointments.filter(patient_name__icontains=patient_name)
+
+    if date:
+        appointments = appointments.filter(date=date)
+
+    context = {
+        'form': form,
+        'appointments': appointments,
+        'patient_name': patient_name,
+        'date': date,
+    }
+    return render(request, 'clinic/appointments.html', context)
+
+
+def edit_appointment(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST, instance=appointment)
+        if form.is_valid():
+            form.save()
+            return redirect('appointments')
+    else:
+        form = AppointmentForm(instance=appointment)
+    return render(request, 'clinic/edit_appointment.html', {'form': form, 'appointment': appointment})
+
+def delete_appointment(request, pk):
+    appointment = get_object_or_404(Appointment, pk=pk)
+    if request.method == 'POST':
+        appointment.delete()
+        return redirect('appointments')  # صفحة عرض المواعيد
+    # لو حاولت الدخول ب GET مثلاً، نعيد التوجيه أو نعرض رسالة
+    return redirect('appointments')
